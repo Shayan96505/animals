@@ -2,6 +2,10 @@ package edu.cnm.deepdive.animals.controller;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,12 +24,33 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ImageFragment extends Fragment {
 
+  private WebView contentView;
+
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
-    // Inflate the layout for this fragment
-    return inflater.inflate(R.layout.fragment_image, container, false);
+    View root = inflater.inflate(R.layout.fragment_image, container, false);
+    setupWebView(root);
+    return root;
   }
+
+  private void setupWebView(View root) {
+    contentView = root.findViewById(R.id.content_view);
+    contentView.setWebViewClient(new WebViewClient() {
+      @Override
+      public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+        return false;
+      }
+    });
+  WebSettings settings = contentView.getSettings();
+  settings.setJavaScriptEnabled(true);
+  settings.setSupportZoom(true);
+  settings.setBuiltInZoomControls(true);
+  settings.setDisplayZoomControls(false);
+  settings.setUseWideViewPort(true);
+  settings.setLoadWithOverviewMode(true);
+  new Retriever().start();
+}
 
   private class Retriever extends Thread {
 
@@ -41,7 +66,7 @@ public class ImageFragment extends Fragment {
 
       AnimalService animalService = retrofit.create(AnimalService.class);
 
-      try{
+      try {
 
         Response<ApiKey> keyResponse = animalService.getApiKey().execute();
         ApiKey key = keyResponse.body();
@@ -53,12 +78,19 @@ public class ImageFragment extends Fragment {
         assert animalList != null;
         final String imageUrl = animalList.get(0).getImageUrl();
 
+        getActivity().runOnUiThread(new Runnable() {
+          @Override
+          public void run() {
+            contentView.loadUrl(imageUrl);
+            //TODO implement webview loadURL method
+
+          }
+        });
+
       } catch (IOException e) {
         Log.e("AnimalService", e.getMessage(), e);
       }
     }
 
   }
-
-
 }
