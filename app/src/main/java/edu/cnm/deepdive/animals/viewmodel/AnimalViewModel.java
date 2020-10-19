@@ -2,6 +2,7 @@ package edu.cnm.deepdive.animals.viewmodel;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
+import android.nfc.NfcAdapter.CreateBeamUrisCallback;
 import android.os.AsyncTask;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -24,6 +25,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class AnimalViewModel extends AndroidViewModel {
 
   private MutableLiveData<List<Animal>> animals;
+  private final MutableLiveData<Integer> selectedItem;
   private final MutableLiveData<Throwable> throwable;
   private final AnimalService animalService;
 
@@ -31,6 +33,7 @@ public class AnimalViewModel extends AndroidViewModel {
       @NonNull Application application) {
     super(application);
     animals = new MutableLiveData<>();
+    selectedItem = new MutableLiveData<>();
     throwable = new MutableLiveData<>();
     animalService = AnimalService.getInstance();
     loadAnimals();
@@ -39,6 +42,14 @@ public class AnimalViewModel extends AndroidViewModel {
 
   public LiveData<List<Animal>> getAnimals() {
     return animals;
+  }
+
+  public LiveData<Integer> getSelectedItem(){
+    return selectedItem;
+  }
+
+  public void select(int index) {
+    selectedItem.setValue(index);
   }
 
   public LiveData<Throwable> getThrowable() {
